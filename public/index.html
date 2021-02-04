@@ -11,7 +11,9 @@
 			crossorigin="anonymous"
 		/>
 		<link rel="stylesheet" href="css/style.css" />
+		
 		<title>ChatCord App</title>
+		
 	</head>
 	<body>
 		<div class="join-container">
@@ -19,7 +21,7 @@
 				<h1><i class="fas fa-smile"></i> chat</h1>
 			</header>
 			<main class="join-main">
-				<form action="chat.html">
+				<form id="login" onsubmit="formHandler(event); return false;">
 					<div class="form-control">
 						<label for="username">Username</label>
 						<input
@@ -27,6 +29,14 @@
 							name="username"
 							id="username"
 							placeholder="Enter username..."
+							required
+						/>
+						<label for="username">Password</label>
+						<input
+							type="text"
+							name="password"
+							id="password"
+							placeholder="Enter password..."
 							required
 						/>
 					</div>
@@ -45,5 +55,6 @@
 				</form>
 			</main>
 		</div>
+		<script src="./js/login.js"></script>
 	</body>
 </html>

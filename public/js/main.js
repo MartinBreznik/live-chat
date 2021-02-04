@@ -4,14 +4,14 @@ const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
 //get username and room from url
-const { username, room} = Qs.parse(location.search, {
+const { username, password, room} = Qs.parse(location.search, {
     ignoreQueryPrefix: true
 });
-console.log(username, room);
-const socket = io();
+console.log(username,password, room);
+const socket = io({auth: {token: {username: username, password: password} }});
 
 //join chatroom ADD PASSWORD HERE
-socket.emit('joinRoom', { username, room })
+socket.emit('joinRoom', { username, password, room })
 
 //get room and users
 socket.on('roomUsers', ({ room, users}) => {

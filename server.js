@@ -2,6 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
+const bodyParser = require('body-parser');
 const formatMessage = require('./utils/messages');
 const {
   userJoin,
@@ -9,18 +10,42 @@ const {
   userLeave,
   getRoomUsers
 } = require('./utils/users');
-
+var jwtAuth = require('socketio-jwt-auth');
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
+var jwt = require('jsonwebtoken');
+const { error } = require('console');
+var accessTokenSecret = "secret";
+const users = require('./allowedUsers.js')
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json());
+
+app.post('/login', (req, res) => {
+  // Read username and password from request body
+  const { username, password } = req.body;
+
+
+console.log(username, password);
+  // Filter user from the users array by username and password
+  const user = users.find(u => { return u.username === username && u.password === password });
+
+  if (user) {
+      // Generate an access token
+      const accessToken = jwt.sign({ username: user.username,  role: user.role }, accessTokenSecret);
+      res.status(200).json(accessToken);
+  } else {
+    //return error
+    res.status(401).json('Username or password incorrect');
+  }
+});
 
 const botName = 'Advanced AI';
 
-// Run when client connects
 io.on('connection', socket => {
+  //console.log(socket.handshake.auth); 
   socket.on('joinRoom', ({ username, room }) => {
     const user = userJoin(socket.id, username, room);
 
@@ -69,6 +94,7 @@ io.on('connection', socket => {
     }
   });
 });
+
 
 const PORT = process.env.PORT || 3001;
 
