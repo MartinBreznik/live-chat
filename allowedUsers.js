@@ -1,11 +1,13 @@
 module.exports = [
     {
         username: 'john',
-        password: 'password123admin',
+        password: 'john123',
+        bearer: '',
         role: 'admin'
     }, {
         username: 'anna',
         password: 'password123member',
+        bearer: '',
         role: 'member'
     }
   ];

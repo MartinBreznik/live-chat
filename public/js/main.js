@@ -3,20 +3,35 @@ const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
-//get username and room from url
-const { username, password, room} = Qs.parse(location.search, {
-    ignoreQueryPrefix: true
-});
-console.log(username,password, room);
-const socket = io({auth: {token: {username: username, password: password} }});
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+  const bearer = getCookie('authorization');
+  const room = getCookie('room');
+  const username = getCookie('username');
+
+const socket = io({auth: {token: {username: username, bearer: bearer} }});
 
 //join chatroom ADD PASSWORD HERE
-socket.emit('joinRoom', { username, password, room })
+socket.emit('joinRoom', { username, room})
 
 //get room and users
 socket.on('roomUsers', ({ room, users}) => {
     outputRoomName(room);
     outputUsers(users);
+    console.log("roomusers", room, users);
 });
 
 //Message from server
@@ -55,6 +70,5 @@ function outputRoomName(room){
 // add users to DOM
 function outputUsers(users){
     userList.innerHTML = `
-    ${users.map(user => `<li>${user.username}</li>`).join('')}
-    `;
+    ${users.map(user => `<li>${user.username}</li>`).join('')}`;
 }
