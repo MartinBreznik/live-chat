@@ -18,8 +18,9 @@ function checkCookies(){
 
     var bearer = getCookie('authorization');
     var logedInAs = getCookie('username');
+    var room = getCookie('room');
 
-    if(bearer && logedInAs){
+    if(bearer && logedInAs && room){
         console.log("The page is redirecting")
     }
     else{

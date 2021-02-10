@@ -4,62 +4,57 @@ const express = require('express');
 const socketio = require('socket.io');
 const bodyParser = require('body-parser');
 const formatMessage = require('./utils/messages');
-const {
-  userJoin,
-  getCurrentUser,
-  userLeave,
-  getRoomUsers
-} = require('./utils/users');
-var jwtAuth = require('socketio-jwt-auth');
+const {userJoin, getCurrentUser, userLeave, getRoomUsers} = require('./utils/users');
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
-var jwt = require('jsonwebtoken');
-const { error } = require('console');
-var accessTokenSecret = "secret";
+const jwt = require('jsonwebtoken');
+//add secret file
+const accessTokenSecret = "secret";
 const users = require('./allowedUsers.js')
-var cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser')
+const botName = 'Advanced AI';
 
 app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use('/login', (req, res, next) => {
-  // Read username and password from request body
   const { username, password, room } = req.body;
-  
-   console.log("req data:", username, password, room);
-  // Filter user from the users array by username and password
   const user = users.find(u => { return u.username === username && u.password === password });
+  //check if user has access to room
+  const hasAccess = user.rooms.find(element => element === room);
   const cookie = req.cookies.cookieName;
+
   if (user) {
-      // Generate an access token
-      const accessToken = jwt.sign({ username: user.username,  role: user.role }, accessTokenSecret);
-      if (cookie === undefined){
-        // add bearer to user
-        user.bearer = accessToken;
-        res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false });
-        res.cookie('username', username, { maxAge: 900000, httpOnly: false });
-        res.cookie('room', room, { maxAge: 900000, httpOnly: false });
-        //add encryption and better response
-        res.status(200).json(true);
-      }
-      else{
-        res.status(401).json('Already loged in aka. cookie present');
+    if(hasAccess){
+            // Generate an access token
+            const accessToken = jwt.sign({ username: user.username,  role: user.role }, accessTokenSecret);
+            if (cookie === undefined){
+              // add bearer to user
+              user.bearer = accessToken;
+              res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false });
+              res.cookie('username', username, { maxAge: 900000, httpOnly: false });
+              res.cookie('room', room, { maxAge: 900000, httpOnly: false });
+              //add encryption and better response
+              res.status(200).json(true);
+            }
+            else{
+              res.status(401).json('Already loged in aka. cookie present');
+          }
+          next();
     }
-    next();
+    else{
+      res.status(403).json("You're Not allowed to access this server");
+    }
   }
   else {
     //return error
     res.status(401).json('Username or password incorrect');
   }
-  
 });
-
 //must be here // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-const botName = 'Advanced AI';
 
 io.on('connection', socket => {
   const resBearer = users.find(u => { return u.bearer === socket.handshake.auth.token.bearer });
@@ -115,14 +110,13 @@ io.on('connection', socket => {
     });
   }
   else{
-    //add wrong auth fallback
+    //add redirect for FRONTEND
+    socket.disconnect(true)
     console.log("wrong authentication");
   }
-
   // Runs when client disconnects
 
 });
-
 
 const PORT = process.env.PORT || 3001;
 

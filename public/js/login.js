@@ -23,7 +23,7 @@ var form = document.getElementById('login');
           window.location.replace("http://localhost:3001/chat.html")
         }
         else{
-          return
+          return alert(data);
         }
       })
       .catch((error) => {

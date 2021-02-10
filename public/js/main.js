@@ -2,26 +2,10 @@ const chatForm = document.getElementById('chat-form');
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
-
-function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for(var i = 0; i <ca.length; i++) {
-      var c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return "";
-  }
-  const bearer = getCookie('authorization');
-  const room = getCookie('room');
-  const username = getCookie('username');
-
+//getCookie function called from validation.js
+const bearer = getCookie('authorization');
+const room = getCookie('room');
+const username = getCookie('username');
 const socket = io({auth: {token: {username: username, bearer: bearer} }});
 
 //join chatroom ADD PASSWORD HERE
@@ -46,6 +30,7 @@ socket.on('message', message => {
 
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    checkCookies();
     //get message text
     const msg = e.target.elements.msg.value;
     
@@ -57,6 +42,7 @@ chatForm.addEventListener('submit', (e) => {
     e.target.elements.msg.focus();
 });
 function outputMessage(message) {
+    checkCookies();
     const div = document.createElement('div');
     div.classList.add('message');
     div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
@@ -72,3 +58,7 @@ function outputUsers(users){
     userList.innerHTML = `
     ${users.map(user => `<li>${user.username}</li>`).join('')}`;
 }
+socket.on('disconnect', function () {
+    alert('User sesion expired, please log in');
+    window.location = "/"; //page you want to redirect
+});
