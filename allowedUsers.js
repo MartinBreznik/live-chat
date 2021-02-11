@@ -5,10 +5,11 @@ module.exports = [
         rooms: ['JavaScript', 'C#'],
         bearer: '',
         role: 'admin'
-    }, {
+    }, 
+    {
         username: 'anna',
-        password: 'password123member',
-        rooms: ['JavaScript', 'PHP'],
+        password: 'anna123',
+        rooms: ['JavaScript', 'C#'],
         bearer: '',
         role: 'member'
     }

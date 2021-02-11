@@ -21,7 +21,6 @@ socket.on('roomUsers', ({ room, users}) => {
 //Message from server
 socket.on('message', message => {
     outputMessage(message);
-
     // scroll down
     chatMessages.scrollTop = chatMessages.scrollHeight;
   });
@@ -42,6 +41,7 @@ chatForm.addEventListener('submit', (e) => {
     e.target.elements.msg.focus();
 });
 function outputMessage(message) {
+    console.log(message);
     checkCookies();
     const div = document.createElement('div');
     div.classList.add('message');
@@ -59,6 +59,9 @@ function outputUsers(users){
     ${users.map(user => `<li>${user.username}</li>`).join('')}`;
 }
 socket.on('disconnect', function () {
-    alert('User sesion expired, please log in');
-    window.location = "/"; //page you want to redirect
+        document.cookie = "authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "room=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        alert('User sesion expired, please log in');
+        window.location = "/"; //page you want to redirect
 });

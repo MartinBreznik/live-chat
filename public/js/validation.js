@@ -14,8 +14,14 @@ function getCookie(cname) {
     return "";
   }
 
-function checkCookies(){
+function revokeAccess(){
+    document.cookie = "authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "room=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.location.replace("http://localhost:3001/");
+}
 
+function checkCookies(){
     var bearer = getCookie('authorization');
     var logedInAs = getCookie('username');
     var room = getCookie('room');
@@ -24,7 +30,8 @@ function checkCookies(){
         console.log("The page is redirecting")
     }
     else{
-        document.location.replace("http://localhost:3001/");
+        revokeAccess();
     }       
 }
+
 window.onload = checkCookies(); 

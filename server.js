@@ -18,6 +18,9 @@ const botName = 'Advanced AI';
 app.use(cookieParser());
 app.use(bodyParser.json());
 
+//must be here // Set static folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/login', (req, res, next) => {
   const { username, password, room } = req.body;
   const user = users.find(u => { return u.username === username && u.password === password });
@@ -32,9 +35,9 @@ app.use('/login', (req, res, next) => {
             if (cookie === undefined){
               // add bearer to user
               user.bearer = accessToken;
-              res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false });
-              res.cookie('username', username, { maxAge: 900000, httpOnly: false });
-              res.cookie('room', room, { maxAge: 900000, httpOnly: false });
+              res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false, secure: false, sameSite:"lax"});
+              res.cookie('username', username, { maxAge: 900000, httpOnly: false, secure: false, sameSite:"lax" });
+              res.cookie('room', room, { maxAge: 900000, httpOnly: false, secure:false, sameSite:"lax"});
               //add encryption and better response
               res.status(200).json(true);
             }
@@ -52,8 +55,7 @@ app.use('/login', (req, res, next) => {
     res.status(401).json('Username or password incorrect');
   }
 });
-//must be here // Set static folder
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 
 io.on('connection', socket => {
@@ -94,7 +96,6 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => {
       const user = userLeave(socket.id);
-  
       if (user) {
         io.to(user.room).emit(
           'message',
