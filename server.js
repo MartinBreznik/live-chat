@@ -94,6 +94,12 @@ io.on('connection', socket => {
       io.to(user.room).emit('message', formatMessage(user.username, msg));
     });
 
+    socket.on('deleteAll', (roomToDelete) => {
+        console.log("ran");
+          io.emit('deleteAllMessages', roomToDelete)
+
+    });
+
     socket.on('disconnect', () => {
       const user = userLeave(socket.id);
       if (user) {

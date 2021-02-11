@@ -15,23 +15,32 @@ function getCookie(cname) {
   }
 
 function revokeAccess(){
-    document.cookie = "authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    document.cookie = "room=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    document.location.replace("http://localhost:3001/");
+    document.cookie = "authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;";
+    document.cookie = "room=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;";
+    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;";
+    window.location.replace("http://localhost:3001")
 }
 
 function checkCookies(){
     var bearer = getCookie('authorization');
     var logedInAs = getCookie('username');
     var room = getCookie('room');
+    var isFirefox = typeof InstallTrigger !== 'undefined';
 
+    //stop firefox refresh
+    console.log("firefox:", isFirefox);
     if(bearer && logedInAs && room){
         console.log("The page is redirecting")
+        if(isFirefox){
+            console.log(window.location);
+        }
+        else{
+            console.log("ok");
+        }
     }
     else{
         revokeAccess();
     }       
 }
-
+//potential problem
 window.onload = checkCookies(); 
