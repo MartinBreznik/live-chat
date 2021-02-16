@@ -7,10 +7,7 @@ const bearer = getCookie('authorization');
 const room = getCookie('room');
 const username = getCookie('username');
 const socket = io({auth: {token: {username: username, bearer: bearer} }})
-//store data better on fe
-const allMessages = [];
 var messageHtml;
-
 //join chatroom ADD PASSWORD HERE
 socket.emit('joinRoom', { username, room})
 
@@ -24,9 +21,7 @@ socket.on('roomUsers', ({ room, users}) => {
 //Message from server
 socket.on('message', message => {
     //fix all messages data storing
-    console.log("before", allMessages)
-    outputMessage(message, false, allMessages);
-    console.log("after", allMessages)
+    outputMessage(message, false);
     // scroll down
     chatMessages.scrollTop = chatMessages.scrollHeight;
   });
@@ -48,30 +43,53 @@ chatForm.addEventListener('submit', (e) => {
 
     
 });
-function outputMessage(message, reloaded, allMessages) {
+function outputMessage(message, reloaded ) {
     if(reloaded === false){
         checkCookies();
         var messageHtml = `<p class="meta">${message.username} <span>${message.time}</span></p>
         <p class="text">${message.text}</p>`;
-        document.querySelectorAll('.message').forEach(e => e.remove());
-        allMessages.push(messageHtml);
-        allMessages.forEach(element => {
-            var div = document.createElement('div');
-            div.classList.add('message');
-            div.innerHTML = element;
-            document.querySelector('.chat-messages').appendChild(div);
-            });
+
+        defer(function () {
+            dbPost(messageHtml)
+            .then((value) => {
+                if(value === undefined || value === null || value === '' || value === false){
+                    return
+                }
+                console.log("success", value)
+                document.querySelectorAll('.message').forEach(e => e.remove());
+                value.forEach(element => {
+                    var div = document.createElement('div');
+                    div.classList.add('message');
+                    div.innerHTML = element;
+                    document.querySelector('.chat-messages').appendChild(div);
+                    });
+              })
+              .catch((error) => {
+                console.error("The Promise is rejected!", error);
+              })
+        });
     }
     else {
-        alert("all", allMessages);
-        allMessages.forEach(element => {
-            var div = document.createElement('div');
-            div.classList.add('message');
-            div.innerHTML = element;
-            document.querySelector('.chat-messages').appendChild(div);
-            });
+        defer(function () {
+            dbPost(messageHtml)
+            .then((value) => {
+                if(value === undefined || value === null || value === '' || value === false){
+                    return
+                }
+                console.log("success", value)
+                document.querySelectorAll('.message').forEach(e => e.remove());
+                value.forEach(element => {
+                    var div = document.createElement('div');
+                    div.classList.add('message');
+                    div.innerHTML = element;
+                    document.querySelector('.chat-messages').appendChild(div);
+                    });
+              })
+              .catch((error) => {
+                console.error("The Promise is rejected!", error);
+              })
+        });
     }
-    return allMessages;
 }
 function deleteMessages(){
     socket.emit('deleteAll', room);
@@ -88,7 +106,6 @@ function outputUsers(users){
 
 socket.on('disconnect', function () {
     //potential problem
-
         //causes disconnect and redirect on firefox
         revokeAccess();
 
@@ -98,9 +115,15 @@ socket.on('disconnect', function () {
 socket.on("deleteAllMessages", (roomToDelete) => {
     if(room === roomToDelete)
     {
-        console.log("array present messages", allMessages);
-        allMessages = [];
-        document.querySelectorAll('.message').forEach(e => e.remove());
+        deferer(function () {
+            dbDelete()
+            .then((value) => {
+                console.log("success")
+              })
+              .catch((error) => {
+                console.error("The Promise is rejected!", error);
+              })
+        });
         location.reload();
     }
     else{
@@ -109,4 +132,4 @@ socket.on("deleteAllMessages", (roomToDelete) => {
     alert("deleted", roomToDelete);
   });
 
-  window.onload = outputMessage('', true, allMessages); 
+  window.onload = outputMessage('', true); 

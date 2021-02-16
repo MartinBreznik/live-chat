@@ -1,3 +1,4 @@
+
 function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
@@ -18,6 +19,17 @@ function revokeAccess(){
     document.cookie = "authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;";
     document.cookie = "room=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;";
     document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;";
+
+    deferer(function () {
+        dbDelete()
+        .then((value) => {
+            console.log("success")
+          })
+          .catch((error) => {
+            console.error("The Promise is rejected!", error);
+          })
+    });
+
     window.location.replace("http://localhost:3001")
 }
 
@@ -31,16 +43,27 @@ function checkCookies(){
     console.log("firefox:", isFirefox);
     if(bearer && logedInAs && room){
         console.log("The page is redirecting")
-        if(isFirefox){
-            console.log(window.location);
-        }
-        else{
-            console.log("ok");
-        }
     }
     else{
         revokeAccess();
     }       
 }
+
+function defer(method) {
+    if (window.dbPost) {
+        method();
+    } else {
+        setTimeout(function() { defer(method) }, 50);
+    }
+}
+
+function deferer(method) {
+    if (window.dbDelete) {
+        method();
+    } else {
+        setTimeout(function() { deferer(method) }, 50);
+    }
+}
+
 //potential problem
 window.onload = checkCookies(); 
