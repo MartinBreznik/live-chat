@@ -6,13 +6,13 @@ const userList = document.getElementById('users');
 const bearer = getCookie('authorization');
 const room = getCookie('room');
 const username = getCookie('username');
-const socket = io({auth: {token: {username: username, bearer: bearer} }})
+const socket = io({ auth: { token: { username: username, bearer: bearer } } })
 var messageHtml;
 //join chatroom ADD PASSWORD HERE
-socket.emit('joinRoom', { username, room})
+socket.emit('joinRoom', { username, room })
 
 //get room and users
-socket.on('roomUsers', ({ room, users}) => {
+socket.on('roomUsers', ({ room, users }) => {
     outputRoomName(room);
     outputUsers(users);
     console.log("roomusers", room, users);
@@ -24,16 +24,16 @@ socket.on('message', message => {
     outputMessage(message, false);
     // scroll down
     chatMessages.scrollTop = chatMessages.scrollHeight;
-  });
+});
 
-  //message submit
+//message submit
 
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
     checkCookies();
     //get message text
     const msg = e.target.elements.msg.value;
-    
+
     //emit message to server
     socket.emit('chatMessage', msg);
 
@@ -41,95 +41,104 @@ chatForm.addEventListener('submit', (e) => {
     e.target.elements.msg.value = '';
     e.target.elements.msg.focus();
 
-    
-});
-function outputMessage(message, reloaded ) {
-    if(reloaded === false){
-        checkCookies();
-        var messageHtml = `<p class="meta">${message.username} <span>${message.time}</span></p>
-        <p class="text">${message.text}</p>`;
 
+});
+function outputMessage(message, reloaded) {
+    checkCookies();
+    var messageObject = {
+        username: message.username,
+        time: message.time,
+        text: message.text
+    }
+    if (reloaded === false) {
         defer(function () {
-            dbPost(messageHtml)
-            .then((value) => {
-                if(value === undefined || value === null || value === '' || value === false){
-                    return
-                }
-                console.log("success", value)
-                document.querySelectorAll('.message').forEach(e => e.remove());
-                value.forEach(element => {
-                    var div = document.createElement('div');
-                    div.classList.add('message');
-                    div.innerHTML = element;
-                    document.querySelector('.chat-messages').appendChild(div);
-                    });
-              })
-              .catch((error) => {
-                console.error("The Promise is rejected!", error);
-              })
+            window.dbPost(messageObject)
+                .then((value) => {
+                    mapToDom(value);
+                })
+                .catch((error) => {
+                    console.error("The Promise is rejected!", error);
+                })
         });
     }
-    else {
+    else if (reloaded === true) {
         defer(function () {
-            dbPost(messageHtml)
-            .then((value) => {
-                if(value === undefined || value === null || value === '' || value === false){
-                    return
-                }
-                console.log("success", value)
-                document.querySelectorAll('.message').forEach(e => e.remove());
-                value.forEach(element => {
-                    var div = document.createElement('div');
-                    div.classList.add('message');
-                    div.innerHTML = element;
-                    document.querySelector('.chat-messages').appendChild(div);
-                    });
-              })
-              .catch((error) => {
-                console.error("The Promise is rejected!", error);
-              })
+            window.dbPost(false)
+                .then((value) => {
+                    mapToDom(value);
+                })
+                .catch((error) => {
+                    console.error("The Promise is rejected!", error);
+                })
         });
     }
 }
-function deleteMessages(){
+//map saved elements to dom
+function mapToDom(value) {
+    if (value === undefined || value === null || value === '' || value === false) {
+        return
+    }
+    console.log("success", value)
+    document.querySelectorAll('.message').forEach(e => e.remove());
+    value.forEach(element => {
+        var objectToHtml = `<p class="meta">${element.username} <span>${element.time}</span></p>
+        <p class="text">${element.text}</p>`;
+        var div = document.createElement('div');
+        div.classList.add('message');
+        div.innerHTML = objectToHtml;
+        document.querySelector('.chat-messages').appendChild(div);
+    });
+
+}
+function deleteMessages() {
     socket.emit('deleteAll', room);
 }
 //add room name to DOM
-function outputRoomName(room){
+function outputRoomName(room) {
     roomName.innerText = room;
 }
 // add users to DOM
-function outputUsers(users){
+function outputUsers(users) {
     userList.innerHTML = `
     ${users.map(user => `<li>${user.username}</li>`).join('')}`;
 }
 
 socket.on('disconnect', function () {
     //potential problem
-        //causes disconnect and redirect on firefox
-        revokeAccess();
+    deferer(function () {
+        dbDelete()
+            .then((value) => {
+                console.log("success")
+            })
+            .catch((error) => {
+                console.error("The Promise is rejected!", error);
+            })
+    });
+    location.reload();
+    //causes disconnect and redirect on firefox
+    revokeAccess();
 
-        alert('User sesion expired, please log in');
+    alert('User sesion expired, please log in');
 });
 
 socket.on("deleteAllMessages", (roomToDelete) => {
-    if(room === roomToDelete)
-    {
+    if (room === roomToDelete) {
         deferer(function () {
             dbDelete()
-            .then((value) => {
-                console.log("success")
-              })
-              .catch((error) => {
-                console.error("The Promise is rejected!", error);
-              })
+                .then((value) => {
+                    console.log("success")
+                })
+                .catch((error) => {
+                    console.error("The Promise is rejected!", error);
+                })
         });
         location.reload();
     }
-    else{
+    else {
         alert("No messages to delete")
     }
     alert("deleted", roomToDelete);
-  });
+});
 
-  window.onload = outputMessage('', true); 
+window.onload = outputMessage('', true);
+

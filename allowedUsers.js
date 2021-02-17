@@ -1,16 +1,16 @@
 module.exports = [
     {
         username: 'john',
-        password: 'john123',
+        password: 'john444',
         rooms: ['JavaScript', 'C#'],
         bearer: '',
         role: 'admin'
-    }, 
+    },
     {
         username: 'anna',
-        password: 'anna123',
+        password: 'anna444',
         rooms: ['JavaScript', 'C#'],
         bearer: '',
         role: 'member'
     }
-  ];
+];

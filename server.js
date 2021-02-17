@@ -4,7 +4,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const bodyParser = require('body-parser');
 const formatMessage = require('./utils/messages');
-const {userJoin, getCurrentUser, userLeave, getRoomUsers} = require('./utils/users');
+const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./utils/users');
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
@@ -29,24 +29,24 @@ app.use('/login', (req, res, next) => {
   const cookie = req.cookies.cookieName;
 
   if (user) {
-    if(hasAccess){
-            // Generate an access token
-            const accessToken = jwt.sign({ username: user.username,  role: user.role }, accessTokenSecret);
-            if (cookie === undefined){
-              // add bearer to user
-              user.bearer = accessToken;
-              res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false, secure: false, sameSite:"lax"});
-              res.cookie('username', username, { maxAge: 900000, httpOnly: false, secure: false, sameSite:"lax" });
-              res.cookie('room', room, { maxAge: 900000, httpOnly: false, secure:false, sameSite:"lax"});
-              //add encryption and better response
-              res.status(200).json(true);
-            }
-            else{
-              res.status(401).json('Already loged in aka. cookie present');
-          }
-          next();
+    if (hasAccess) {
+      // Generate an access token
+      const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret);
+      if (cookie === undefined) {
+        // add bearer to user
+        user.bearer = accessToken;
+        res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
+        res.cookie('username', username, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
+        res.cookie('room', room, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
+        //add encryption and better response
+        res.status(200).json(true);
+      }
+      else {
+        res.status(401).json('Already loged in aka. cookie present');
+      }
+      next();
     }
-    else{
+    else {
       res.status(403).json("You're Not allowed to access this server");
     }
   }
@@ -60,18 +60,18 @@ app.use('/login', (req, res, next) => {
 
 io.on('connection', socket => {
   const resBearer = users.find(u => { return u.bearer === socket.handshake.auth.token.bearer });
-  if( resBearer && socket.handshake.auth.token.bearer === resBearer.bearer){
+  if (resBearer && socket.handshake.auth.token.bearer === resBearer.bearer) {
     //add ALL chatroom logic here
 
-    socket.on('joinRoom', ({ username, room}) => {
+    socket.on('joinRoom', ({ username, room }) => {
 
       const user = userJoin(socket.id, username, room);
       console.log("usr", user);
       socket.join(user.room);
-  
+
       // Welcome current user
-      socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'));
-  
+      //socket.emit('message', formatMessage(botName, 'Welcome to ChatCord!'));
+
       // Broadcast when a user connects
       socket.broadcast
         .to(user.room)
@@ -79,24 +79,24 @@ io.on('connection', socket => {
           'message',
           formatMessage(botName, `${user.username} has joined the chat`)
         );
-  
+
       // Send users and room info
       io.to(user.room).emit('roomUsers', {
         room: user.room,
         users: getRoomUsers(user.room)
       });
     });
-  
+
     // Listen for chatMessage
     socket.on('chatMessage', msg => {
       const user = getCurrentUser(socket.id);
-  
+
       io.to(user.room).emit('message', formatMessage(user.username, msg));
     });
 
     socket.on('deleteAll', (roomToDelete) => {
-        console.log("ran");
-          io.emit('deleteAllMessages', roomToDelete)
+      console.log("ran");
+      io.emit('deleteAllMessages', roomToDelete)
 
     });
 
@@ -107,7 +107,7 @@ io.on('connection', socket => {
           'message',
           formatMessage(botName, `${user.username} has left the chat`)
         );
-  
+
         // Send users and room info
         io.to(user.room).emit('roomUsers', {
           room: user.room,
@@ -116,7 +116,7 @@ io.on('connection', socket => {
       }
     });
   }
-  else{
+  else {
     //add redirect for FRONTEND
     socket.disconnect(true)
     console.log("wrong authentication");
