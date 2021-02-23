@@ -90,9 +90,54 @@ function mapToDom(value) {
     });
 
 }
+//optimize this, make it more gracious
+function deletePostphone(selected) {
+    var timer;
+    //clearInterval(showInterval);
+    //console.log("1", showInterval);
+    if(selected.value){
+        alert('Chat history will be deleted in: ' + selected.value + 'minutes');
+        timer = selected.value;
+    }
+    else if(selected){
+        timer = selected;
+    }
+    else{
+        console.log("timing error, deleting data to preserve privacy");
+        timer = 0;
+    }
+
+    countDownDate = moment().add(timer, 'minutes');
+
+    window.clearInterval(timer);
+
+    //interval set to 5seconds, increase to improve performance
+    var timer = window.setInterval(countdown, 5000);
+  }
+
 function deleteMessages() {
     socket.emit('deleteAll', room);
 }
+
+var countdown = function() {
+    diff = countDownDate.diff(moment());
+    if (diff <= 0) {
+      window.clearInterval(timer);
+      deleteMessages();
+    } 
+    else if(diff === 300000){
+        alert('Chat history will be deleted in: 5 minutes');
+    }
+    else if(diff === 150000){
+        alert('Chat history will be deleted in: 2.5 minutes');
+    }
+    else if(diff === 60000){
+        alert('Chat history will be deleted in: 1 minute');
+    }
+    else
+    console.log(moment.utc(diff).format("mm:ss"));
+  };
+
 //add room name to DOM
 function outputRoomName(room) {
     roomName.innerText = room;
@@ -141,4 +186,4 @@ socket.on("deleteAllMessages", (roomToDelete) => {
 });
 
 window.onload = outputMessage('', true);
-
+window.onload = deletePostphone(30);

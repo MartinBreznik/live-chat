@@ -25,10 +25,10 @@ app.use('/login', (req, res, next) => {
   const { username, password, room } = req.body;
   const user = users.find(u => { return u.username === username && u.password === password });
   //check if user has access to room
-  const hasAccess = user.rooms.find(element => element === room);
   const cookie = req.cookies.cookieName;
 
   if (user) {
+    const hasAccess = user.rooms.find(element => element === room);
     if (hasAccess) {
       // Generate an access token
       const accessToken = jwt.sign({ username: user.username, role: user.role }, accessTokenSecret);

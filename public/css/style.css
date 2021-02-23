@@ -36,6 +36,7 @@ a {
 	color: var(--dark-color-a);
 	border: 0;
 	font-size: 17px;
+	margin-left: 2px;
 }
 
 /* Chat Page */
@@ -109,7 +110,12 @@ a {
 .chat-messages .message .meta span {
 	color: #777;
 }
-
+#menuContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    min-width: 44%;
+}
 .chat-form-container {
 	padding: 20px 30px;
 	background-color: var(--dark-color-a);
