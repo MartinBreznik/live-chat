@@ -12,7 +12,7 @@ var form = document.getElementById('login');
         "Access-Control-Origin": "*"
      }
      
-     fetch('http://localhost:3001/login', {
+     fetch('http://ufo.si:8080/login', {
         method: "POST",
         headers: headers,
         body: data
@@ -20,7 +20,7 @@ var form = document.getElementById('login');
       .then(res => res.json())
       .then(data => {
         if(data === true){
-          window.location.replace("http://localhost:3001/chat.html")
+          window.location.replace("http://ufo.si:8080/chat.html")
         }
         else{
           return alert(data);

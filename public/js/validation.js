@@ -30,7 +30,7 @@ function revokeAccess() {
             })
     });
 
-    window.location.replace("http://localhost:3001")
+    window.location.replace("http://ufo.si:8080")
 }
 
 function checkCookies() {
