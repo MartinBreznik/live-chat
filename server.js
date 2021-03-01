@@ -9,6 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 const jwt = require('jsonwebtoken');
+var cors = require('cors')
 //add secret file
 const accessTokenSecret = "secret";
 const users = require('./allowedUsers.js')
@@ -17,16 +18,15 @@ const botName = 'Advanced AI';
 
 app.use(cookieParser());
 app.use(bodyParser.json());
-
+app.use(cors());
 //must be here // Set static folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'html')));
 
 app.use('/login', (req, res, next) => {
   const { username, password, room } = req.body;
   const user = users.find(u => { return u.username === username && u.password === password });
   //check if user has access to room
   const cookie = req.cookies.cookieName;
-
   if (user) {
     const hasAccess = user.rooms.find(element => element === room);
     if (hasAccess) {
@@ -39,7 +39,7 @@ app.use('/login', (req, res, next) => {
         res.cookie('username', username, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
         res.cookie('room', room, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
         //add encryption and better response
-        res.status(200).json(true);
+	 res.status(200).json(true);
       }
       else {
         res.status(401).json('Already loged in aka. cookie present');
