@@ -20,7 +20,7 @@ var form = document.getElementById('login');
       .then(res => res.json())
       .then(data => {
         if(data === true){
-          window.location.replace("http://ufo.si:8080/chat.html")
+          window.location.replace("http://ufo.si/chat.html")
         }
         else{
           return alert(data);
