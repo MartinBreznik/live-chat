@@ -45,11 +45,17 @@ chatForm.addEventListener('submit', (e) => {
 });
 function outputMessage(message, reloaded) {
     checkCookies();
+    var selected = document.getElementById("deleteSelector");
+    var expiration = selected.options[selected.selectedIndex].value;
+    expiration = moment().add(expiration, 'minutes');
+    expiration = expiration.valueOf();
     var messageObject = {
         username: message.username,
         time: message.time,
-        text: message.text
-    }
+        text: message.text,
+        expire: expiration
+    };
+    //add duration to message object
     if (reloaded === false) {
         defer(function () {
             window.dbPost(messageObject)
@@ -78,18 +84,23 @@ function mapToDom(value) {
     if (value === undefined || value === null || value === '' || value === false) {
         return
     }
-    console.log("success", value)
     document.querySelectorAll('.message').forEach(e => e.remove());
-    value.forEach(element => {
-        var objectToHtml = `<p class="meta">${element.username} <span>${element.time}</span></p>
-        <p class="text">${element.text}</p>`;
-        var div = document.createElement('div');
-        div.classList.add('message');
-        div.innerHTML = objectToHtml;
-        document.querySelector('.chat-messages').appendChild(div);
+     value.forEach(element => {
+        //add removal of expired messages
+        var current = moment().valueOf();
+        var diff = element.expire - current;
+        if (diff <= 0) {
+            element.expire = 0;
+        }
+            var objectToHtml = `<p class="meta">${element.username} <span>${element.time}</span></p>
+            <p class="text">${element.text}</p>`;
+            var div = document.createElement('div');
+            div.classList.add('message');
+            div.innerHTML = objectToHtml;
+            document.querySelector('.chat-messages').appendChild(div);
     });
-
-}
+    deleteExpired(value);
+}   
 //optimize this, make it more gracious
 function deletePostphone(selected) {
     var timer;
@@ -114,7 +125,16 @@ function deletePostphone(selected) {
     //interval set to 5seconds, increase to improve performance
     var timer = window.setInterval(countdown, 5000);
   }
-
+  function deleteExpired(value){
+    value.forEach(element => {
+        if(element.expire === 0){
+            var removeIndex = value.map(function(item) { return item.expire; }).indexOf(0);
+            value.splice(removeIndex, 1);
+            console.log("deleted expired", value);
+        }
+    });
+    
+}
 function deleteMessages() {
     socket.emit('deleteAll', room);
 }
@@ -122,8 +142,10 @@ function deleteMessages() {
 var countdown = function() {
     diff = countDownDate.diff(moment());
     if (diff <= 0) {
-      window.clearInterval(timer);
-      deleteMessages();
+        if (typeof timer !== 'undefined'){
+            timer = window.clearInterval(timer);
+        }
+        deleteMessages();
     } 
     else if(diff === 300000){
         alert('Chat history will be deleted in: 5 minutes');

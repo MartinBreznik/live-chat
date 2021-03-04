@@ -23,7 +23,6 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'html')));
 
 app.use('/login', (req, res, next) => {
-console.log("scess");
   const { username, password, room } = req.body;
   const user = users.find(u => { return u.username === username && u.password === password });
   //check if user has access to room
@@ -44,7 +43,7 @@ console.log("scess");
           room: room
         }
         //add encryption and better response
-	    res.status(200).json(respObj);
+	    res.status(200).json(resPayload);
       }
       else {
         res.status(401).json('Already loged in aka. cookie present');
@@ -100,7 +99,6 @@ io.on('connection', socket => {
     });
 
     socket.on('deleteAll', (roomToDelete) => {
-      console.log("ran");
       io.emit('deleteAllMessages', roomToDelete)
 
     });
