@@ -28,6 +28,7 @@ console.log("scess");
   const user = users.find(u => { return u.username === username && u.password === password });
   //check if user has access to room
   const cookie = req.cookies.cookieName;
+  var resPayload;
   if (user) {
     const hasAccess = user.rooms.find(element => element === room);
     if (hasAccess) {
@@ -36,11 +37,14 @@ console.log("scess");
       if (cookie === undefined) {
         // add bearer to user
         user.bearer = accessToken;
-        res.cookie('authorization', accessToken, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
-        res.cookie('username', username, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
-        res.cookie('room', room, { maxAge: 900000, httpOnly: false, secure: false, sameSite: "lax" });
+        resPayload = {
+          data: true, 
+          auth: accessToken,
+          uName: username,
+          room: room
+        }
         //add encryption and better response
-	 res.status(200).json(true);
+	    res.status(200).json(respObj);
       }
       else {
         res.status(401).json('Already loged in aka. cookie present');
