@@ -55,6 +55,7 @@ function outputMessage(message, reloaded) {
         text: message.text,
         expire: expiration
     };
+    document.cookie = `expiration=${messageObject.expire}; max-age=900000; SameSite=Lax;`;
     //add duration to message object
     if (reloaded === false) {
         defer(function () {
@@ -99,10 +100,11 @@ function mapToDom(value) {
             div.innerHTML = objectToHtml;
             document.querySelector('.chat-messages').appendChild(div);
     });
-    deleteExpired(value);
+    //deleteExpired(value);
 }   
 //optimize this, make it more gracious
 function deletePostphone(selected) {
+    
     var timer;
     //clearInterval(showInterval);
     //console.log("1", showInterval);
@@ -125,7 +127,8 @@ function deletePostphone(selected) {
     //interval set to 5seconds, increase to improve performance
     var timer = window.setInterval(countdown, 5000);
   }
-  function deleteExpired(value){
+
+/*   function deleteExpired(value){
     value.forEach(element => {
         if(element.expire === 0){
             var removeIndex = value.map(function(item) { return item.expire; }).indexOf(0);
@@ -134,18 +137,31 @@ function deletePostphone(selected) {
         }
     });
     
-}
+} */
+
 function deleteMessages() {
     socket.emit('deleteAll', room);
 }
 
 var countdown = function() {
+    var currentExp = getCookie("expiration");
     diff = countDownDate.diff(moment());
     if (diff <= 0) {
         if (typeof timer !== 'undefined'){
             timer = window.clearInterval(timer);
         }
-        deleteMessages();
+        //deleteMessages();
+        deferer(function () {
+            console.log(currentExp, "epox");
+            dbDeleteExpired(currentExp)
+            .then((value) => {
+                console.log("vlue", value);
+            })
+            .catch((error) => {
+                console.error("The Promise is rejected!", error);
+            })
+        });
+
     } 
     else if(diff === 300000){
         alert('Chat history will be deleted in: 5 minutes');

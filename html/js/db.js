@@ -28,8 +28,7 @@ window.dbPost = function (inputValue) {
 
         const db = await openDB(dbName, version, {
             upgrade(db, oldVersion, newVersion, transaction) {
-                const store = db.createObjectStore(storeName, { autoIncrement: true })
-                //store.put('Hello world!', 'Hello')
+                const store = db.createObjectStore(storeName, {keyPath: "expire"} )
             }
         });
         //in case of unique bot message check add this
@@ -55,7 +54,13 @@ window.dbPost = function (inputValue) {
             var items = await db.transaction(storeName).objectStore(storeName).getAll()
         }
         //items = removeDuplicates( items, 'text' );
+/*         console.log("items1", items);
 
+        var filteredItems = items.filter((obj) => {
+            return obj.expire !== 0;
+          })
+
+        console.log("items2", items); */
         return items
 
     }
@@ -69,4 +74,25 @@ window.dbDelete = function () {
         await deleteDB(dbName)
     }
     return deleteDb()
+}
+window.dbDeleteExpired = function (Key) {
+    const dbName = "chatHistory"
+    const storeName = "store0"
+    const version = 1
+    const deleteDbExpired = async () => {
+        const db = await openDB(dbName, version, {
+            upgrade(db, oldVersion, newVersion, transaction) {
+                const store = db.createObjectStore(storeName, {keyPath: "expire"} )
+            }
+        });
+    
+    // open a database transaction and delete the task, finding it by the name we retrieved above
+    let transaction = db.transaction([storeName], "readwrite");
+    let request = transaction.objectStore(storeName).delete(Key);
+    transaction.oncomplete = function() {
+        // delete the parent of the button, which is the list item, so it no longer is displayed
+        console.log("completed transaction");
+      }
+}
+return deleteDbExpired()
 }
