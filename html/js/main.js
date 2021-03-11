@@ -153,9 +153,9 @@ var countdown = function() {
         //deleteMessages();
         deferer(function () {
             console.log(currentExp, "epox");
-            dbDeleteExpired(currentExp)
+            dbDeleteExpired(Number(currentExp))
             .then((value) => {
-                console.log("vlue", value);
+                //location.reload();
             })
             .catch((error) => {
                 console.error("The Promise is rejected!", error);
